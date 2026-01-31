@@ -1,0 +1,180 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import React, { useEffect, useState } from "react";
+import { Textarea } from "./ui/textarea";
+import { Button } from "./ui/button";
+import { formatDistanceToNow } from "date-fns";
+interface Comment {
+  _id: string;
+  videoid: string;
+  userid: string;
+  commentbody: string;
+  usercommented: string;
+  commentedon: string;
+}
+const Comments = ({ videoId }: any) => {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const user: any = {
+    id: "1",
+    name: "John Doe",
+    email: "john@example.com",
+    image: "https://github.com/shadcn.png?height=32&width=32",
+  };
+  const fetchedComments = [
+    {
+      _id: "1",
+      videoid: videoId,
+      userid: "1",
+      commentbody: "Great video! Really enjoyed watching this.",
+      usercommented: "John Doe",
+      commentedon: new Date(Date.now() - 3600000).toISOString(),
+    },
+    {
+      _id: "2",
+      videoid: videoId,
+      userid: "2",
+      commentbody: "Thanks for sharing this amazing content!",
+      usercommented: "Jane Smith",
+      commentedon: new Date(Date.now() - 7200000).toISOString(),
+    },
+  ];
+  useEffect(() => {
+    loadComments();
+  }, [videoId]);
+  const loadComments = async () => {
+    setComments(fetchedComments);
+  };
+  const handleSubmitComment = async () => {
+    if (!user || !newComment.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      const newCommentObj: Comment = {
+        _id: Date.now().toString(),
+        videoid: videoId,
+        userid: user.id,
+        commentbody: newComment,
+        usercommented: user.name || "Anonymous",
+        commentedon: new Date().toISOString(),
+      };
+
+      setComments([newCommentObj, ...comments]);
+      setNewComment("");
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEdit = (comment: Comment) => {
+    setEditingCommentId(comment._id);
+    setEditText(comment.commentbody);
+  };
+
+  const handleUpdateComment = async () => {
+    if (!editText.trim()) return;
+
+    setComments((prev) =>
+      prev.map((c) =>
+        c._id === editingCommentId ? { ...c, commentbody: editText } : c,
+      ),
+    );
+    setEditingCommentId(null);
+    setEditText("");
+  };
+
+  const handleDelete = async (id: string) => {
+    setComments((prev) => prev.filter((c) => c._id !== id));
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-semibold">{comments.length} Comments</h2>
+      {user && (
+        <div className="flex gap-4">
+          <Avatar className="w-10 h-10">
+            <AvatarImage src={user.image || ""} />
+            <AvatarFallback>{user.name?.[0] || "U"}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 space-y-2">
+            <Textarea
+              placeholder="Add a comment..."
+              value={newComment}
+              onChange={(e: any) => setNewComment(e.target.value)}
+              className="min-h-[80px] resize-none border-0 border-b-2 rounded-none focus-visible:ring-0"
+            />
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="ghost"
+                onClick={() => setNewComment("")}
+                disabled={!newComment.trim()}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubmitComment}
+                disabled={!newComment.trim() || isSubmitting}
+              >
+                Comment
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      <div>
+        {comments.map((comment) => (
+          <div key={comment._id}>
+            <Avatar>
+              <AvatarFallback>(comment.usercommented[0])</AvatarFallback>
+            </Avatar>
+            <div>
+              <div>
+                <span>{comment.usercommented}</span>
+                <span>
+                  {formatDistanceToNow(new Date(comment.commentedon))} ago
+                </span>
+              </div>
+              {editingCommentId === comment._id ? (
+                <div>
+                  <Textarea
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                  />
+                  <div>
+                    <Button onClick={handleUpdateComment}>Save</Button>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      setEditingCommentId(null);
+                      setEditText("");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm">{comment.commentbody}</p>
+                  {comment.userid === user.id && (
+                    <div className="flex gap-2 mt-2 text-sm text-gray-500">
+                      <Button onClick={() => handleEdit(comment)}>Edit</Button>
+                      <Button onClick={() => handleDelete(comment._id)}>
+                        Delete
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default Comments;
