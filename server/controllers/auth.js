@@ -1,44 +1,91 @@
 import mongoose from "mongoose";
 import users from "../Modals/Auth.js";
+import axios from "axios";
+
+const southStates = [
+  "Tamil Nadu",
+  "Kerala",
+  "Karnataka",
+  "Andhra Pradesh",
+  "Telangana"
+];
 
 export const login = async (req, res) => {
-  const { email, name, image } = req.body;
+  const { email, name, image, mobile } = req.body;
 
   try {
-    const existingUser = await users.findOne({ email });
+    let existingUser = await users.findOne({ email });
 
     if (!existingUser) {
-      const newUser = await users.create({ email, name, image });
-      return res.status(201).json({ result: newUser });
-    } else {
-      return res.status(200).json({ result: existingUser });
+      existingUser = await users.create({
+        email,
+        name,
+        image,
+        mobile
+      });
     }
+
+    const location = await axios.get("https://ipapi.co/json/");
+    const state = location.data.region;
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+
+    if (southStates.includes(state)) {
+      console.log("Email OTP:", otp);
+
+      return res.status(200).json({
+        result: existingUser,
+        message: "OTP sent to Email",
+        method: "email",
+        otp
+      });
+    }
+
+    console.log("Mobile OTP:", otp);
+
+    return res.status(200).json({
+      result: existingUser,
+      message: "OTP sent to Mobile",
+      method: "mobile",
+      otp
+    });
+
   } catch (error) {
     console.error("Login error:", error);
-    return res.status(500).json({ message: "Something went wrong" });
+    return res.status(500).json({
+      message: "Something went wrong"
+    });
   }
 };
 
 export const updateprofile = async (req, res) => {
   const { id: _id } = req.params;
   const { channelname, description } = req.body;
+
   if (!mongoose.Types.ObjectId.isValid(_id)) {
-    return res.status(500).json({ message: "User unavailable..." });
+    return res.status(500).json({
+      message: "User unavailable..."
+    });
   }
+
   try {
     const updatedata = await users.findByIdAndUpdate(
       _id,
       {
         $set: {
           channelname: channelname,
-          description: description,
-        },
+          description: description
+        }
       },
       { new: true }
     );
+
     return res.status(201).json(updatedata);
+
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Something went wrong" });
+    return res.status(500).json({
+      message: "Something went wrong"
+    });
   }
 };

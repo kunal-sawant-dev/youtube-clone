@@ -1,11 +1,21 @@
 import mongoose from "mongoose";
-const userschema = mongoose.Schema({
-  email: { type: String, required: true },
-  name: { type: String },
-  channelname: { type: String },
-  description: { type: String },
-  image: { type: String },
-  joinedon: { type: Date, default: Date.now },
-});
 
-export default mongoose.model("user", userschema);
+const userSchema = mongoose.Schema({
+
+  name:String,
+  email:String,
+  password:String,
+
+  plan:{
+    type:String,
+    default:"free"
+  },
+
+  watchLimit:{
+    type:Number,
+    default:300
+  }
+
+},{timestamps:true});
+
+export default mongoose.model("User", userSchema);

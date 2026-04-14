@@ -4,11 +4,23 @@ import { Toaster } from "@/components/ui/sonner";
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { UserProvider } from "../lib/AuthContext";
+import Script from "next/script";
+
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <UserProvider>
+
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        strategy="beforeInteractive"
+      />
+
       <div className="min-h-screen bg-white text-black">
+<<<<<<< HEAD
         <title>You-Tube Clone</title>
+=======
+        <title>YouTube Clone</title>
+>>>>>>> bd0a687 (Final project update)
         <Header />
         <Toaster />
         <div className="flex">
@@ -16,6 +28,7 @@ export default function App({ Component, pageProps }: AppProps) {
           <Component {...pageProps} />
         </div>
       </div>
+
     </UserProvider>
   );
 }
