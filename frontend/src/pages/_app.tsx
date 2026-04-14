@@ -16,11 +16,6 @@ export default function App({ Component, pageProps }: AppProps) {
       />
 
       <div className="min-h-screen bg-white text-black">
-<<<<<<< HEAD
-        <title>You-Tube Clone</title>
-=======
-        <title>YouTube Clone</title>
->>>>>>> bd0a687 (Final project update)
         <Header />
         <Toaster />
         <div className="flex">
